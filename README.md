@@ -1,5 +1,5 @@
 # What is this?
-_uknowit.py_ is a software that i have created for testing how secure a password is by brute-forcing combinations of words.
+_uknowit.py_ is a software that i have created for testing how secure a password is by brute-forcing combinations of characters.
 
 # Setup
 ```sh
