@@ -62,15 +62,17 @@ checked_characters = ["", " "] + (list(string.ascii_lowercase) if "l" in charact
 
 
 try:
-	hash_function = (lambda x: x if hash_type == "plain" else hashlib.new(hash_type))
+	get_hash_function = ((lambda x: x) if hash_type == "plain" else (lambda : hashlib.new(hash_type)))
 except ValueError:
 	print(f"\33[1;31mHash Type '{hash_type}' is not recognized!")
 	exit(1)
 
 print(f"Just to make sure..")
+print(f"+----------------------->")
 print(f"\33[1;33mHashed Password : {hashed_password}")
 print(f"Hash Type : {hash_type}")
 print(f"Maximal Length : {max_length} characters")
+print(f"+----------------------->")
 print(f"Characters :")
 for character in characters:
 	if character == "l":
@@ -83,7 +85,8 @@ for character in characters:
 		print("\t- Digits")
 print(f"Character Total : {len(checked_characters)} characters")
 print(f"Possible Words Total : {len(checked_characters)**max_length}")
-print("\33[1;37m")
+print("\33[1;37m", end="")
+print(f"+---------------------->")
 
 if input("continue? (y/n)") == "y":
 	current_password_guess = ""
@@ -124,7 +127,16 @@ if input("continue? (y/n)") == "y":
 		for i in current_characters_index:
 			current_password_guess += checked_characters[i]
 
-		if hash_function(current_password_guess) == hashed_password:
+		hash_function = get_hash_function()
+		if hash_type != "plain":
+			hash_function.update(str(current_password_guess).encode("utf-8"))
+
+		guessed_password_hashed = (hash_function.hexdigest()) if hash_type != "plain" else (current_password_guess)
+
+
+		guessed_password_hashed2 = (hash_function.hexdigest()) if hash_type != "plain" else (current_password_guess)
+
+		if guessed_password_hashed == hashed_password:
 			print(f"PASSWORD : {current_password_guess}                                                         ")
 			break
 
