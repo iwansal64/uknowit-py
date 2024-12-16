@@ -5,7 +5,7 @@ _uknowit.py_ is a software that i have created for testing how secure a password
 ```sh
 $ git clone https://github.com/iwansal64/uknowit-py.git
 $ cd uknowit-py
-$ sudo sh install.sh
+$ sudo ./install.sh
 $ uknowit
 ```
 and that's pretty much it..

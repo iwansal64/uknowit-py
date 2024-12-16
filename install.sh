@@ -1,8 +1,12 @@
+#!/bin/bash
+
 printf "\33[1;35mWELCOME TO UKNOWIT INSTALLATION!!\r"
 
-sleep 2
+sleep 1
 
 printf "Creating the environment for you......\t :)\r"
+
+sleep 1
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
