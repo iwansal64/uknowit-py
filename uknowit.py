@@ -4,6 +4,7 @@ from os import system
 import hashlib
 import math
 import multiprocessing
+import time
 
 arguments = sys.argv
 
@@ -180,7 +181,24 @@ def start_brute_force(start_percent: int, end_percent: int, do_print: bool=True,
   
 	return [False, ""]
  
+def second_to_time(sec: int|float) -> str:
+	print(sec)
+	seconds = int(sec)
+	minutes = 0 if seconds < 60 else math.floor(seconds / 60)
+	hours = 0 if minutes < 60 else math.floor(minutes / 60)
+	
+	seconds = seconds % 60
+	minutes = minutes % 60
+ 
+	print(seconds)
+	print(minutes)
+	print(hours)
+	
+	return f"{f'{hours} hours ' if hours > 0 else ''}{f'{minutes} minutes ' if minutes > 0 else ''}{f'{seconds} seconds'}"
+	
+
 if input("continue? (y/n)") == "y":
+	before_time = time.time()
 	if multiprocesses > 1:
 		with multiprocessing.Pool(processes=multiprocesses) as p:
 			processes = []
@@ -213,3 +231,5 @@ if input("continue? (y/n)") == "y":
 			
 	else:
 		start_brute_force(start_percent, end_percent)
+		
+	print(f"Elapsed Time : {second_to_time(int(time.time()-before_time))}")
