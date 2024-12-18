@@ -7,7 +7,7 @@ import math
 arguments = sys.argv
 
 system("clear")
-print("\33[1;36m", end="")
+print("\33[1;36m\33[5;31m", end="")
 print(r"""
 .-. .-..-..-..-. .-. .---. .-.  .-..-..-----. 
 | } { || ' / |  \{ |/ {-. \| {  } |{ |`-' '-' 
@@ -17,8 +17,9 @@ print(r"""
 
 hashfunctions = list(hashlib.algorithms_available)+["plain"]
 
-if len(arguments) == 1:
-	print("Welcome to UKNOWIT! - A password cracker")
+print("\33[0m")
+if len(arguments) < 4:
+	print("\33[1;36mWelcome to UKNOWIT!-A password cracker")
 	print("How to use?")
 	print("+------------------------------------------------------------------------------------+")
 	print("|                                        FORMAT                                      |")
@@ -62,7 +63,7 @@ if len(arguments) == 1:
 
 characters: str = arguments[arguments.index("-c") + 1] if "-c" in arguments else "ul"
 start_percent: int = int(arguments[arguments.index("-p") + 1]) if "-p" in arguments else 0
-end_percent: int = int(arguments[arguments.index("-e") + 1]) if "-e" in arguments else 0
+end_percent: int = int(arguments[arguments.index("-e") + 1]) if "-e" in arguments else 100
 hash_type: str = arguments[1]
 hashed_password: str = arguments[2]
 max_length: int = int(arguments[3])
@@ -98,24 +99,15 @@ print(f"End Percentage\t: {end_percent}")
 print("\33[1;37m", end="")
 print(f"+---------------------->")
 
-if input("continue? (y/n)") == "y":
-	current_password_guess = ""
-	current_characters_index = [0 for i in range(max_length)]
+
+current_password_guess = ""
+def start_brute_force():
 	current_index = 0
+	current_characters_index = [0 for i in range(max_length)]
 
 	end_iteration = len(checked_characters)**max_length
 	iteration = end_iteration * (start_percent / 100)
 	progress_percentage = (iteration/end_iteration) * 10
- 
-	'''
- 	Ex:
-		- 50%, [0, 0], 36:
-			- 36 possible characters each
-			- 2 positions
-			- 36 * 36 possbile combinations which is 1296
-			- 50% of 1296 which is 648
-			- because of the first column is increased by 1 each 36 iterations, get the reminder of 648
- 	'''
   
 	left_combinations = end_iteration - words_combinations
 	for index in range(len(current_characters_index)-1, -1, -1):
@@ -163,8 +155,6 @@ if input("continue? (y/n)") == "y":
 		guessed_password_hashed = (hash_function.hexdigest()) if hash_type != "plain" else (current_password_guess)
 
 
-		guessed_password_hashed2 = (hash_function.hexdigest()) if hash_type != "plain" else (current_password_guess)
-
 		if guessed_password_hashed == hashed_password:
 			print(f"PASSWORD : {current_password_guess}                                                         ")
 			break
@@ -197,3 +187,6 @@ if input("continue? (y/n)") == "y":
 		print(f'|{"="*(int(progress_percentage/10)):<10}|{round(progress_percentage, 3)}% - |{current_password_guess}|', end="\r")
 	
 	print(f'|{"="*10:<10}|DONE')
+ 
+if input("continue? (y/n)") == "y":
+	start_brute_force()
