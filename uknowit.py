@@ -2,7 +2,7 @@ import string
 import sys
 from os import system
 import hashlib
-from time import time
+import math
 
 arguments = sys.argv
 
@@ -15,65 +15,73 @@ print(r"""
  `---' `-'`-``-' `-' `---' `-'  `-'`-'  `-' 
 """)
 
+hashfunctions = list(hashlib.algorithms_available)+["plain"]
+
 if len(arguments) == 1:
 	print("Welcome to UKNOWIT! - A password cracker")
 	print("How to use?")
-	print("+-------------------------------------------------------+")
-	print("|                         FORMAT                        |")
-	print("+-------------------------------------------------------+")
-	print("| uknowit <hash_type> {hash} {max_length} [{characters}]|")
-	print("+-------------------------------------------------------+")
-	print()
-	print("+-------------------------------------------------------+")
-	print("|                       HASH TYPE                       |")
-	print("+---------------------------+---------------------------+")
-	for index, hash_type in enumerate(list(hashlib.algorithms_available)+["plain"]):
-		if index % 2 == 0:
-			print(f'{f"| - {hash_type}":<28}', end="")
+	print("+------------------------------------------------------------------------------------+")
+	print("|                                        FORMAT                                      |")
+	print("+------------------------------------------------------------------------------------+")
+	print("| uknowit <hash_type> {hash} {max_length} [-c {characters}] [-p {percent}] [-e {end}]|")
+	print("+------------------------------------------------------------------------------------+", end="\n")
+	print("+------------------------------------------------------------------------------------+")
+	print("|                                      HASH TYPE                                     |")
+	print("+------------------------------------------+-----------------------------------------+")
+	for index, hash_type in enumerate(hashfunctions):
+		if index % 4 == 0:
+			print(f'{f"| - {hash_type}":<22}', end="")
+		elif index % 4 == 1:
+			print(f'{f"| - {hash_type}":<21}', end="")
+		elif index % 4 == 2:
+			print(f'{f"| - {hash_type}":<21}', end="")
 		else:
-			print(f'{f"| - {hash_type}":<28}', end="|\n")
-	if len(hashlib.algorithms_available) % 2 != 0:
-		print(f'{f"|":<28}', end="|\n")
+			print(f'{f"| - {hash_type}":<21}', end="|\n")
+
+	if (len(hashfunctions)) % 4 != 0:
+		print(f'{f"|":<21}'*(4-(len(hashfunctions)) % 4), end="|\n")
 		
-	print("+---------------------------+---------------------------+")
+	print("+------------------------------------------+-----------------------------------------+")
 	print()
-	print("+-------------------------------------------------------+")
-	print("|                       CHARACTERS                      |")
-	print("+---------------------------+---------------------------+")
-	print("| - l (lower_case)          | - d (digits)              |")
-	print("| - u (upper_case)          | - s (symbols)             |")
-	print("+---------------------------+---------------------------+")
+	print("+------------------------------------------------------------------------------------+")
+	print("|                                     CHARACTERS                                     |")
+	print("+------------------------------------------+-----------------------------------------+")
+	print("| - l (lower_case)                         | - d (digits)                            |")
+	print("| - u (upper_case)                         | - s (symbols)                           |")
+	print("+------------------------------------------+-----------------------------------------+")
 	print()
-	print("+-------------------------------------------------------+")
-	print("|                        EXAMPLES                       |")
-	print("+-------------------------------------------------------+")
-	print("| uknowit sha256 81253bddb35f92a6fcd 5                  |")
-	print("| uknowit md5 12b6a0f1cf3aa53af35701 7 uld              |")
-	print("| uknowit blake2 66155be9b92e0d666b7 0 ulsd             |")
-	print("+-------------------------------------------------------+")
+	print("+------------------------------------------------------------------------------------+")
+	print("|                                       EXAMPLES                                     |")
+	print("+------------------------------------------------------------------------------------+")
+	print("| uknowit sha256 81253bddb35f92a6fcd 5                                               |")
+	print("| uknowit md5 12b6a0f1cf3aa53af35701 7 uld                                           |")
+	print("| uknowit blake2 66155be9b92e0d666b7 0 ulsd                                          |")
+	print("+------------------------------------------------------------------------------------+")
 	exit(0)
 
 
-characters = arguments[4] if len(arguments) > 4 else "ul"
-hash_type = arguments[1]
-hashed_password = arguments[2]
-max_length = int(arguments[3])
-checked_characters = ["", " "] + (list(string.ascii_lowercase) if "l" in characters else []) + (list(string.ascii_uppercase) if "u" in characters else []) + (list(string.digits) if "d" in characters else []) + (list(string.punctuation) if "s" in characters else [])
-
+characters: str = arguments[arguments.index("-c") + 1] if "-c" in arguments else "ul"
+start_percent: int = int(arguments[arguments.index("-p") + 1]) if "-p" in arguments else 0
+end_percent: int = int(arguments[arguments.index("-e") + 1]) if "-e" in arguments else 0
+hash_type: str = arguments[1]
+hashed_password: str = arguments[2]
+max_length: int = int(arguments[3])
+checked_characters: list[str] = ["", " "] + (list(string.ascii_lowercase) if "l" in characters else []) + (list(string.ascii_uppercase) if "u" in characters else []) + (list(string.digits) if "d" in characters else []) + (list(string.punctuation) if "s" in characters else [])
+words_combinations = (len(checked_characters)**max_length) * (1 - (start_percent / 100))
 
 try:
-	get_hash_function = ((lambda x: x) if hash_type == "plain" else (lambda : hashlib.new(hash_type)))
+	get_hash_function = ((lambda : (lambda x:x)) if hash_type == "plain" else (lambda : hashlib.new(hash_type)))
 except ValueError:
 	print(f"\33[1;31mHash Type '{hash_type}' is not recognized!")
 	exit(1)
 
 print(f"Just to make sure..")
 print(f"+----------------------->")
-print(f"\33[1;33mHashed Password : {hashed_password}")
-print(f"Hash Type : {hash_type}")
-print(f"Maximal Length : {max_length} characters")
+print(f"\33[1;33mHashed Password\t: {hashed_password}")
+print(f"Hash Type\t: {hash_type}")
+print(f"Maximal Length\t: {max_length} characters")
 print(f"+----------------------->")
-print(f"Characters :")
+print(f"Characters:")
 for character in characters:
 	if character == "l":
 		print("\t- Lower Case")
@@ -83,8 +91,10 @@ for character in characters:
 		print("\t- Symbols")
 	elif character == "d":
 		print("\t- Digits")
-print(f"Character Total : {len(checked_characters)} characters")
-print(f"Possible Words Total : {len(checked_characters)**max_length}")
+print(f"Character Total\t: {len(checked_characters)} characters")
+print(f"Possible Words Total\t: {words_combinations}")
+print(f"Starting Percentage\t: {start_percent}")
+print(f"End Percentage\t: {end_percent}")
 print("\33[1;37m", end="")
 print(f"+---------------------->")
 
@@ -93,11 +103,30 @@ if input("continue? (y/n)") == "y":
 	current_characters_index = [0 for i in range(max_length)]
 	current_index = 0
 
-	iteration = 0
 	end_iteration = len(checked_characters)**max_length
+	iteration = end_iteration * (start_percent / 100)
 	progress_percentage = (iteration/end_iteration) * 10
-	# est = ""
-	# last_time = time()
+ 
+	'''
+ 	Ex:
+		- 50%, [0, 0], 36:
+			- 36 possible characters each
+			- 2 positions
+			- 36 * 36 possbile combinations which is 1296
+			- 50% of 1296 which is 648
+			- because of the first column is increased by 1 each 36 iterations, get the reminder of 648
+ 	'''
+  
+	left_combinations = end_iteration - words_combinations
+	for index in range(len(current_characters_index)-1, -1, -1):
+		# <- 36^0,36^1,36^2
+		# -> 1, 36, 1296
+		power_number = len(checked_characters)**index
+
+		if left_combinations > power_number:
+			current_characters_index[index] += math.floor(left_combinations / power_number)
+			left_combinations = left_combinations % power_number
+ 
 	while True:
 		iteration += 1
 		current_characters_index[0] += 1
@@ -124,8 +153,8 @@ if input("continue? (y/n)") == "y":
 		
 		current_password_guess = ""
 		progress_percentage = (iteration/end_iteration) * 100
-		for i in current_characters_index:
-			current_password_guess += checked_characters[i]
+		for index in current_characters_index:
+			current_password_guess += checked_characters[index]
 
 		hash_function = get_hash_function()
 		if hash_type != "plain":
@@ -138,6 +167,10 @@ if input("continue? (y/n)") == "y":
 
 		if guessed_password_hashed == hashed_password:
 			print(f"PASSWORD : {current_password_guess}                                                         ")
+			break
+		
+		if progress_percentage > end_percent:
+			print("REACH ENDS PERCENTAGE!                       ")
 			break
 
 		# if iteration % 1000 == 0:
