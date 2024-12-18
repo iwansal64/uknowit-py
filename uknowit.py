@@ -3,6 +3,7 @@ import sys
 from os import system
 import hashlib
 import math
+import multiprocessing
 
 arguments = sys.argv
 
@@ -21,49 +22,51 @@ print("\33[0m")
 if len(arguments) < 4:
 	print("\33[1;36mWelcome to UKNOWIT!-A password cracker")
 	print("How to use?")
-	print("+------------------------------------------------------------------------------------+")
-	print("|                                        FORMAT                                      |")
-	print("+------------------------------------------------------------------------------------+")
-	print("| uknowit <hash_type> {hash} {max_length} [-c {characters}] [-p {percent}] [-e {end}]|")
-	print("+------------------------------------------------------------------------------------+", end="\n")
-	print("+------------------------------------------------------------------------------------+")
-	print("|                                      HASH TYPE                                     |")
-	print("+------------------------------------------+-----------------------------------------+")
+	print("+-------------------------------------------------------------------------------------------------+")
+	print("|                                              FORMAT                                             |")
+	print("+-------------------------------------------------------------------------------------------------+")
+	print("| uknowit <hash_type> {hash} {max_length} [-c {characters}] [-p {percent}] [-e {end}] [-m {cores}]|")
+	print("+-------------------------------------------------------------------------------------------------+", end="\n")
+	print()
+	print("+-------------------------------------------------------------------------------------------------+")
+	print("|                                             HASH TYPE                                           |")
+	print("+-------------------------------------------------+-----------------------------------------------+")
 	for index, hash_type in enumerate(hashfunctions):
 		if index % 4 == 0:
-			print(f'{f"| - {hash_type}":<22}', end="")
+			print(f'{f"| - {hash_type}":<25}', end="")
 		elif index % 4 == 1:
-			print(f'{f"| - {hash_type}":<21}', end="")
+			print(f'{f"| - {hash_type}":<25}', end="")
 		elif index % 4 == 2:
-			print(f'{f"| - {hash_type}":<21}', end="")
+			print(f'{f"| - {hash_type}":<24}', end="")
 		else:
-			print(f'{f"| - {hash_type}":<21}', end="|\n")
+			print(f'{f"| - {hash_type}":<24}', end="|\n")
 
 	if (len(hashfunctions)) % 4 != 0:
-		print(f'{f"|":<21}'*(4-(len(hashfunctions)) % 4), end="|\n")
+		print(f'{f"|":<24}'*(4-(len(hashfunctions)) % 4), end="|\n")
 		
-	print("+------------------------------------------+-----------------------------------------+")
+	print("+-------------------------------------------------+-----------------------------------------------+")
 	print()
-	print("+------------------------------------------------------------------------------------+")
-	print("|                                     CHARACTERS                                     |")
-	print("+------------------------------------------+-----------------------------------------+")
-	print("| - l (lower_case)                         | - d (digits)                            |")
-	print("| - u (upper_case)                         | - s (symbols)                           |")
-	print("+------------------------------------------+-----------------------------------------+")
+	print("+-------------------------------------------------------------------------------------------------+")
+	print("|                                           CHARACTERS                                            |")
+	print("+-----------------------------------------------+-------------------------------------------------+")
+	print("| - l (lower_case)                              | - d (digits)                                    |")
+	print("| - u (upper_case)                              | - s (symbols)                                   |")
+	print("+-----------------------------------------------+-------------------------------------------------+")
 	print()
-	print("+------------------------------------------------------------------------------------+")
-	print("|                                       EXAMPLES                                     |")
-	print("+------------------------------------------------------------------------------------+")
-	print("| uknowit sha256 81253bddb35f92a6fcd 5                                               |")
-	print("| uknowit md5 12b6a0f1cf3aa53af35701 7 uld                                           |")
-	print("| uknowit blake2 66155be9b92e0d666b7 0 ulsd                                          |")
-	print("+------------------------------------------------------------------------------------+")
+	print("+-------------------------------------------------------------------------------------------------+")
+	print("|                                             EXAMPLES                                            |")
+	print("+-------------------------------------------------------------------------------------------------+")
+	print("| uknowit sha256 81253bddb35f92a6fcd 5                                                            |")
+	print("| uknowit md5 12b6a0f1cf3aa53af35701 7 -c ul -p 50                                                |")
+	print("| uknowit blake2 66155be9b92e0d666b7 0 -c ulsd -m 4                                               |")
+	print("+-------------------------------------------------------------------------------------------------+")
 	exit(0)
 
 
 characters: str = arguments[arguments.index("-c") + 1] if "-c" in arguments else "ul"
 start_percent: int = int(arguments[arguments.index("-p") + 1]) if "-p" in arguments else 0
 end_percent: int = int(arguments[arguments.index("-e") + 1]) if "-e" in arguments else 100
+multiprocesses: int = int(arguments[arguments.index("-m") + 1]) if "-m" in arguments else 1
 hash_type: str = arguments[1]
 hashed_password: str = arguments[2]
 max_length: int = int(arguments[3])
@@ -81,6 +84,7 @@ print(f"+----------------------->")
 print(f"\33[1;33mHashed Password\t: {hashed_password}")
 print(f"Hash Type\t: {hash_type}")
 print(f"Maximal Length\t: {max_length} characters")
+print(f"Cores\t\t: {multiprocesses}")
 print(f"+----------------------->")
 print(f"Characters:")
 for character in characters:
@@ -101,7 +105,7 @@ print(f"+---------------------->")
 
 
 current_password_guess = ""
-def start_brute_force():
+def start_brute_force(start_percent: int, end_percent: int, do_print: bool=True, print_percent: bool=True) -> [bool, str]:
 	current_index = 0
 	current_characters_index = [0 for i in range(max_length)]
 
@@ -156,37 +160,56 @@ def start_brute_force():
 
 
 		if guessed_password_hashed == hashed_password:
-			print(f"PASSWORD : {current_password_guess}                                                         ")
-			break
+			if do_print:
+				print(f"PASSWORD : {current_password_guess}                                                         ")
+
+			return [True, current_password_guess]
 		
 		if progress_percentage > end_percent:
-			print("REACH ENDS PERCENTAGE!                       ")
-			break
+			if do_print:
+				print("REACH ENDS PERCENTAGE!                       ")
 
-		# if iteration % 1000 == 0:
-		# 	speed = time() - last_time / 10
+			return [False, str(progress_percentage)]
 
-		# 	seconds_time_left = (end_iteration - iteration) * speed
-		# 	minutes_time_left = 0
-		# 	hours_time_left = 0
-   
-		# 	minutes_time_left += seconds_time_left % 60
-		# 	seconds_time_left = seconds_time_left % 60
-
-		# 	hours_time_left += minutes_time_left % 60
-		# 	minutes_time_left = minutes_time_left % 60
-
-		# 	seconds_time_left = int(seconds_time_left)
-		# 	minutes_time_left = int(minutes_time_left)
-		# 	hours_time_left = int(hours_time_left)
-
-		# 	est = f"{f'{hours_time_left} hours ' if hours_time_left > 0 else f'{minutes_time_left} minutes ' if minutes_time_left > 0 else f'{seconds_time_left} seconds'}"
-
-		# 	last_time = time()
-
-		print(f'|{"="*(int(progress_percentage/10)):<10}|{round(progress_percentage, 3)}% - |{current_password_guess}|', end="\r")
+		if do_print or print_percent:
+			print(f'|{"="*(int(progress_percentage/10)):<10}|{round(progress_percentage, 3)}%' + (f' - |{current_password_guess}|' if do_print else ''), end="\r")
+			# print(current_password_guess)
 	
-	print(f'|{"="*10:<10}|DONE')
+	if do_print:
+		print(f'|{"="*10:<10}|DONE')
+  
+	return [False, ""]
  
 if input("continue? (y/n)") == "y":
-	start_brute_force()
+	if multiprocesses > 1:
+		with multiprocessing.Pool(processes=multiprocesses) as p:
+			processes = []
+			for i in range(multiprocesses):
+				processes.append(p.apply_async(start_brute_force, (((i/multiprocesses)*(end_percent-start_percent))+start_percent, (((i+1)/multiprocesses)*(end_percent-start_percent))+start_percent, False, i == multiprocesses-1)))
+
+			
+			index = 1
+			while True:
+				try:
+					res = processes[index].get(timeout=2)
+					if res[0] == True:
+						print(f"Password : {res[1]}             ")
+						break
+					else:
+						del processes[index]
+						if len(processes) == 0:
+							print("No Matched Password :(")
+							break
+  
+				except multiprocessing.TimeoutError:
+					pass
+
+				index += 1
+				if index > len(processes)-1:
+					index = 0	
+
+				continue
+				
+			
+	else:
+		start_brute_force(start_percent, end_percent)
