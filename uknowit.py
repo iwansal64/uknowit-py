@@ -5,6 +5,8 @@ import hashlib
 import math
 import multiprocessing
 import time
+from typing import Tuple
+import random
 
 arguments = sys.argv
 
@@ -20,6 +22,7 @@ print(r"""
 hashfunctions = list(hashlib.algorithms_available)+["plain"]
 
 print("\33[0m")
+
 if len(arguments) < 4:
 	print("\33[1;36mWelcome to UKNOWIT!-A password cracker")
 	print("How to use?")
@@ -106,15 +109,15 @@ print(f"+---------------------->")
 
 
 current_password_guess = ""
-def start_brute_force(start_percent: int, end_percent: int, do_print: bool=True, print_percent: bool=True) -> [bool, str]:
-	current_index = 0
+def start_brute_force(start_percent: int, end_percent: int, do_print: bool=True, print_percent: bool=True, process_id: int=0) -> Tuple[bool, str]:
+	# time.sleep(random.random() * 3)
 	current_characters_index = [0 for i in range(max_length)]
 
-	end_iteration = len(checked_characters)**max_length
-	iteration = end_iteration * (start_percent / 100)
-	progress_percentage = (iteration/end_iteration) * 10
+	end_iteration = ((len(checked_characters)**max_length) * (end_percent / 100) - 1)
+	starting_iteration = end_iteration * (start_percent / 100)
+	iteration = starting_iteration
   
-	left_combinations = end_iteration - words_combinations
+	left_combinations = starting_iteration
 	for index in range(len(current_characters_index)-1, -1, -1):
 		# <- 36^0,36^1,36^2
 		# -> 1, 36, 1296
@@ -124,6 +127,12 @@ def start_brute_force(start_percent: int, end_percent: int, do_print: bool=True,
 			current_characters_index[index] += math.floor(left_combinations / power_number)
 			left_combinations = left_combinations % power_number
  
+	# print(process_id)
+	# print(current_characters_index)
+	# print(end_iteration)
+	# return (False, "")
+
+	i = 0
 	while True:
 		iteration += 1
 		current_characters_index[0] += 1
@@ -149,7 +158,7 @@ def start_brute_force(start_percent: int, end_percent: int, do_print: bool=True,
 				break
 		
 		current_password_guess = ""
-		progress_percentage = (iteration/end_iteration) * 100
+		progress_percentage = ((iteration/end_iteration) * 100)
 		for index in current_characters_index:
 			current_password_guess += checked_characters[index]
 
@@ -159,27 +168,32 @@ def start_brute_force(start_percent: int, end_percent: int, do_print: bool=True,
 
 		guessed_password_hashed = (hash_function.hexdigest()) if hash_type != "plain" else (current_password_guess)
 
-
 		if guessed_password_hashed == hashed_password:
 			if do_print:
 				print(f"PASSWORD : {current_password_guess}                                                         ")
 
-			return [True, current_password_guess]
-		
-		if progress_percentage > end_percent:
+			return (True, current_password_guess)
+	
+		if iteration >= end_iteration:
 			if do_print:
 				print("REACH ENDS PERCENTAGE!                       ")
 
-			return [False, str(progress_percentage)]
+			return (False, "")
+
+		if not do_print:
+			progress_percentage = (((iteration-starting_iteration)/(end_iteration-starting_iteration)) * 100)
 
 		if do_print or print_percent:
-			print(f'|{"="*(int(progress_percentage/10)):<10}|{round(progress_percentage, 3)}%' + (f' - |{current_password_guess}|' if do_print else ''), end="\r")
-			# print(current_password_guess)
+			i += 1
+			if i > 3:
+				i = 0
+			print(f'|{"="*(int(progress_percentage/10)):<10}|{round(progress_percentage, 3)}%' + (f' - |{current_password_guess}|' if do_print else (' \\' if i % 4 == 0 else (' |' if i % 4 == 1 else (' /' if i % 4 == 3 else ' -')))), end="\r")
+		
 	
 	if do_print:
 		print(f'|{"="*10:<10}|DONE')
   
-	return [False, ""]
+	return (False, "")
  
 def second_to_time(sec: int|float) -> str:
 	print(sec)
@@ -190,10 +204,6 @@ def second_to_time(sec: int|float) -> str:
 	seconds = seconds % 60
 	minutes = minutes % 60
  
-	print(seconds)
-	print(minutes)
-	print(hours)
-	
 	return f"{f'{hours} hours ' if hours > 0 else ''}{f'{minutes} minutes ' if minutes > 0 else ''}{f'{seconds} seconds'}"
 	
 
@@ -203,13 +213,14 @@ if input("continue? (y/n)") == "y":
 		with multiprocessing.Pool(processes=multiprocesses) as p:
 			processes = []
 			for i in range(multiprocesses):
-				processes.append(p.apply_async(start_brute_force, (((i/multiprocesses)*(end_percent-start_percent))+start_percent, (((i+1)/multiprocesses)*(end_percent-start_percent))+start_percent, False, i == multiprocesses-1)))
+				processes.append(p.apply_async(start_brute_force, (((i/multiprocesses)*(end_percent-start_percent))+start_percent, (((i+1)/multiprocesses)*(end_percent-start_percent))+start_percent, False, i == multiprocesses-1, i)))
 
 			
-			index = 1
+			index = 0
 			while True:
 				try:
 					res = processes[index].get(timeout=2)
+					# print(res)
 					if res[0] == True:
 						print(f"Password : {res[1]}             ")
 						break
@@ -231,5 +242,5 @@ if input("continue? (y/n)") == "y":
 			
 	else:
 		start_brute_force(start_percent, end_percent)
-		
+
 	print(f"Elapsed Time : {second_to_time(int(time.time()-before_time))}")
