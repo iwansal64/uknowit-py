@@ -8,6 +8,11 @@ $ cd uknowit-py
 $ sudo ./install.sh
 $ uknowit
 ```
+here's the one line installation
+```sh
+git clone https://github.com/iwansal64/uknowit-py.git && cd uknowit-py && sudo ./install.sh && uknowit
+```
+
 and that's pretty much it..
 Now your computer should can run the program now by typing `uknowit`
 
