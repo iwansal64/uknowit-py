@@ -60,9 +60,9 @@ if len(arguments) < 4:
 	print("+-------------------------------------------------------------------------------------------------+")
 	print("|                                             EXAMPLES                                            |")
 	print("+-------------------------------------------------------------------------------------------------+")
-	print("| uknowit sha256 81253bddb35f92a6fcd 5                                                            |")
-	print("| uknowit md5 12b6a0f1cf3aa53af35701 7 -c ul -p 50                                                |")
-	print("| uknowit blake2 66155be9b92e0d666b7 0 -c ulsd -m 4                                               |")
+	print("| uknowit sha256 67cbfb2d71faddd4b79c5109f1021409f80cd030d4ab32f95be2e0683f2fc2f6 8 -c ul         |")
+	print("| uknowit md5 0cbc6611f5540bd0809a388dc95a615b 7 -c l -p 50                                       |")
+	print("| uknowit sha256 090e565b1557cdf3dc6c79a5295f1c19b0edab82c7fc867a41b3806ea53a8161 4 -c ulsd -m 4  |")
 	print("+-------------------------------------------------------------------------------------------------+")
 	exit(0)
 
@@ -196,7 +196,6 @@ def start_brute_force(start_percent: int, end_percent: int, do_print: bool=True,
 	return (False, "")
  
 def second_to_time(sec: int|float) -> str:
-	print(sec)
 	seconds = int(sec)
 	minutes = 0 if seconds < 60 else math.floor(seconds / 60)
 	hours = 0 if minutes < 60 else math.floor(minutes / 60)
