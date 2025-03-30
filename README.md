@@ -1,6 +1,16 @@
 # What is this?
 _uknowit.py_ is a software that i have created for testing how secure a password is by brute-forcing combinations of characters.
 
+# ETHICAL USAGE
+
+```
++--------------------! ETHICAL USAGE !---------------------+
+|      This project is intended for ethical use only.      |
+|  It must not be used in applications that promote harm,  |
+|      discrimination, or violations of human rights.      |
++----------------------------------------------------------+
+```
+
 # Setup
 ```sh
 $ git clone https://github.com/iwansal64/uknowit-py.git
